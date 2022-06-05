@@ -74,6 +74,9 @@ export class App {
     this.onHoldListArray.forEach((onHoldItem: any, index: any) => {
       this.createItemEl(this.onHoldList, 3, onHoldItem, index);
     });
+
+    this.updatedOnLoad = true;
+    this.updateSavedColumns();
   }
 
   // Set localStorage array
@@ -138,6 +141,7 @@ export class App {
         });
         const parrentEl = this.itemLists[this.currentColumn];
         parrentEl.appendChild(this.draggedItem);
+        this.rebuildArrays();
       });
     });
   }
@@ -149,5 +153,26 @@ export class App {
         this.currentColumn = index;
       });
     });
+  }
+  // Allow arrays to reflect drag and drop items
+  private rebuildArrays() {
+    this.backlogListArray = [];
+    this.completeListArray = [];
+    this.progressListArray = [];
+    this.onHoldListArray = [];
+
+    for (let i = 0; i < this.backlogList.children.length; i++) {
+      this.backlogListArray.push(this.backlogList.children[i].textContent);
+    }
+    for (let i = 0; i < this.progressList.children.length; i++) {
+      this.progressListArray.push(this.progressList.children[i].textContent);
+    }
+    for (let i = 0; i < this.completeList.children.length; i++) {
+      this.completeListArray.push(this.completeList.children[i].textContent);
+    }
+    for (let i = 0; i < this.onHoldList.children.length; i++) {
+      this.onHoldListArray.push(this.onHoldList.children[i].textContent);
+    }
+    this.updateDOM();
   }
 }
