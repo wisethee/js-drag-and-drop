@@ -1,7 +1,6 @@
 export class App {
   constructor() {
-    // this.getSavedColumns();
-    // this.updateSavedColumns();
+    this.handleDragAndDrop();
   }
 
   private addBtns = document.querySelectorAll('.add-btn:not(.solid)');
@@ -26,6 +25,10 @@ export class App {
   private onHoldListArray: any = [];
   private listArrays: any = [];
 
+  // Drag
+  private draggedItem: any;
+  private currentColumn: any;
+
   // Get arrays from localStorage if available
   private getSavedColumns() {
     if (localStorage.getItem('backlogItems')) {
@@ -39,23 +42,6 @@ export class App {
       this.completeListArray = ['Being cool', 'Getting stuff done'];
       this.onHoldListArray = ['Being uncool'];
     }
-  }
-
-  // Set localStorage array
-  private updateSavedColumns() {
-    this.listArrays = [
-      this.backlogListArray,
-      this.progressListArray,
-      this.completeListArray,
-      this.onHoldListArray
-    ];
-    const arrayNames = ['backlog', 'progress', 'complete', 'onHold'];
-    arrayNames.forEach((arrayName, index) => {
-      localStorage.setItem(
-        `${arrayName}Items`,
-        JSON.stringify(this.listArrays[index])
-      );
-    });
   }
 
   // Update columns in DOM, reset HTML, filter array, update localStorage
@@ -90,16 +76,78 @@ export class App {
     });
   }
 
+  // Set localStorage array
+  private updateSavedColumns() {
+    this.listArrays = [
+      this.backlogListArray,
+      this.progressListArray,
+      this.completeListArray,
+      this.onHoldListArray
+    ];
+    const arrayNames = ['backlog', 'progress', 'complete', 'onHold'];
+    arrayNames.forEach((arrayName, index) => {
+      localStorage.setItem(
+        `${arrayName}Items`,
+        JSON.stringify(this.listArrays[index])
+      );
+    });
+  }
+
   // Create DOM ELements for each list item
-  createItemEl(columnEl: HTMLElement, column: any, item: any, index: any) {
-    // console.log('columnEl: ', columnEl);
-    // console.log('column: ', column);
-    // console.log('item: ', item);
-    // console.log('index: ', index);
+  private createItemEl(
+    columnEl: HTMLElement,
+    column: any,
+    item: any,
+    index: any
+  ) {
     // List Item
     const listEl = document.createElement('li');
     listEl.classList.add('drag-item');
     listEl.textContent = item;
+    listEl.draggable = true;
+    this.dragItem(listEl);
     columnEl.appendChild(listEl);
+  }
+
+  private handleDragAndDrop() {
+    this.allowDrop();
+    this.dropItem();
+    this.dragEnter();
+  }
+
+  private dragItem(element: HTMLElement) {
+    element.addEventListener('dragstart', (event) => {
+      this.draggedItem = event.target;
+    });
+  }
+
+  private allowDrop() {
+    this.itemLists.forEach((itemList: HTMLElement) => {
+      itemList.addEventListener('dragover', (event: Event) => {
+        event.preventDefault();
+      });
+    });
+  }
+
+  private dropItem() {
+    this.itemLists.forEach((itemList: HTMLElement) => {
+      itemList.addEventListener('drop', (event: Event) => {
+        event.preventDefault();
+        this.itemLists.forEach((itemList: HTMLElement) => {
+          itemList.classList.remove('over');
+        });
+        const parrentEl = this.itemLists[this.currentColumn];
+        parrentEl.appendChild(this.draggedItem);
+      });
+    });
+  }
+
+  private dragEnter() {
+    this.itemLists.forEach((itemList: HTMLElement, index: any) => {
+      itemList.addEventListener('dragenter', () => {
+        itemList.classList.add('over');
+        this.currentColumn = index;
+      });
+    });
   }
 }
