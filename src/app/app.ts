@@ -1,11 +1,12 @@
 export class App {
   constructor() {
-    this.handleDragAndDrop();
+    this.handleDragAndDropEvents();
+    this.handleButtonEvents();
   }
 
-  private addBtns = document.querySelectorAll('.add-btn:not(.solid)');
-  private saveItemBtns = document.querySelectorAll('.solid');
-  private addItemContainers = document.querySelectorAll('.add-container');
+  private addBtns: any = document.querySelectorAll('.add-btn:not(.solid)');
+  private saveItemBtns: any = document.querySelectorAll('.solid');
+  private addItemContainers: any = document.querySelectorAll('.add-container');
   private addItems = document.querySelectorAll('.add-item');
 
   // Item List
@@ -112,10 +113,15 @@ export class App {
     columnEl.appendChild(listEl);
   }
 
-  private handleDragAndDrop() {
+  private handleDragAndDropEvents() {
     this.allowDrop();
     this.dropItem();
     this.dragEnter();
+  }
+
+  private handleButtonEvents() {
+    this.showInputBox();
+    this.hideInputBox();
   }
 
   private dragItem(element: HTMLElement) {
@@ -174,5 +180,38 @@ export class App {
       this.onHoldListArray.push(this.onHoldList.children[i].textContent);
     }
     this.updateDOM();
+  }
+
+  // Show add item input box
+  private showInputBox() {
+    this.addBtns.forEach((addBtn: HTMLElement, index: any) => {
+      addBtn.addEventListener('click', (event: any) => {
+        addBtn.style.visibility = 'hidden';
+        this.saveItemBtns[index].style.display = 'flex';
+        this.addItemContainers[index].style.display = 'flex';
+      });
+    });
+  }
+
+  // Save and hide item input box
+  private hideInputBox() {
+    this.saveItemBtns.forEach((saveItemBtn: HTMLElement, index: any) => {
+      saveItemBtn.addEventListener('click', (event: any) => {
+        saveItemBtn.style.display = 'none';
+        this.addBtns[index].style.visibility = 'visible';
+        this.addItemContainers[index].style.display = 'none';
+        this.addToColumn(index);
+      });
+    });
+  }
+
+  private addToColumn(index: any) {
+    const itemText = this.addItems[index].textContent;
+    const selectedArray = this.listArrays[index];
+    if (itemText) {
+      selectedArray.push(itemText);
+      this.updateDOM();
+    }
+    this.addItems[index].textContent = '';
   }
 }
