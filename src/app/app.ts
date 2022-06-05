@@ -57,24 +57,28 @@ export class App {
     this.backlogListArray.forEach((backlogItem: any, index: any) => {
       this.createItemEl(this.backlogList, 0, backlogItem, index);
     });
+    this.backlogListArray = this.filterArray(this.backlogListArray);
 
     // Progress Column
     this.progressList.textContent = '';
     this.progressListArray.forEach((progressItem: any, index: any) => {
       this.createItemEl(this.progressList, 1, progressItem, index);
     });
+    this.progressListArray = this.filterArray(this.progressListArray);
 
     // Complete Column
     this.completeList.textContent = '';
     this.completeListArray.forEach((completeItem: any, index: any) => {
       this.createItemEl(this.completeList, 2, completeItem, index);
     });
+    this.completeListArray = this.filterArray(this.completeListArray);
 
     // On Hold Column
     this.onHoldList.textContent = '';
     this.onHoldListArray.forEach((onHoldItem: any, index: any) => {
       this.createItemEl(this.onHoldList, 3, onHoldItem, index);
     });
+    this.onHoldListArray = this.filterArray(this.onHoldListArray);
 
     this.updatedOnLoad = true;
     this.updateSavedColumns();
@@ -105,12 +109,14 @@ export class App {
     index: any
   ) {
     // List Item
-    const listEl = document.createElement('li');
+    const listEl: HTMLElement = document.createElement('li');
     listEl.classList.add('drag-item');
     listEl.textContent = item;
     listEl.draggable = true;
     this.dragItem(listEl);
     columnEl.appendChild(listEl);
+    listEl.setAttribute('contentEditable', 'true');
+    listEl.id = index;
   }
 
   private handleDragAndDropEvents() {
@@ -122,6 +128,7 @@ export class App {
   private handleButtonEvents() {
     this.showInputBox();
     this.hideInputBox();
+    this.updateItem();
   }
 
   private dragItem(element: HTMLElement) {
@@ -173,12 +180,15 @@ export class App {
     for (let i = 0; i < this.progressList.children.length; i++) {
       this.progressListArray.push(this.progressList.children[i].textContent);
     }
+
     for (let i = 0; i < this.completeList.children.length; i++) {
       this.completeListArray.push(this.completeList.children[i].textContent);
     }
+
     for (let i = 0; i < this.onHoldList.children.length; i++) {
       this.onHoldListArray.push(this.onHoldList.children[i].textContent);
     }
+
     this.updateDOM();
   }
 
@@ -205,6 +215,7 @@ export class App {
     });
   }
 
+  // Add text to localStorage
   private addToColumn(index: any) {
     const itemText = this.addItems[index].textContent;
     const selectedArray = this.listArrays[index];
@@ -213,5 +224,27 @@ export class App {
       this.updateDOM();
     }
     this.addItems[index].textContent = '';
+  }
+
+  // update item or delete
+  private updateItem() {
+    this.itemLists.forEach((itemList: HTMLElement, index: any) => {
+      itemList.addEventListener('focusout', (event: any) => {
+        const id = event.target.id;
+        const selectedArray = this.listArrays[index];
+        const selectedColumnEl = this.itemLists[index].children;
+        if (!selectedColumnEl[id].textContent) {
+          delete selectedArray[id];
+        }
+        console.log(selectedArray);
+        console.log(selectedColumnEl[id].textContent);
+        this.updateDOM();
+      });
+    });
+  }
+
+  // Filter arrays to remove empty items
+  private filterArray(array: any) {
+    return array.filter((item: any) => item !== null);
   }
 }
