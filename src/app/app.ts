@@ -29,6 +29,7 @@ export class App {
   // Drag
   private draggedItem: any;
   private currentColumn: any;
+  private dragging = false;
 
   // Get arrays from localStorage if available
   private getSavedColumns() {
@@ -115,7 +116,7 @@ export class App {
     listEl.draggable = true;
     this.dragItem(listEl);
     columnEl.appendChild(listEl);
-    listEl.setAttribute('contentEditable', 'true');
+    // listEl.setAttribute('contentEditable', 'true');
     listEl.id = index;
   }
 
@@ -123,6 +124,7 @@ export class App {
     this.allowDrop();
     this.dropItem();
     this.dragEnter();
+    this.makeItemEditable();
   }
 
   private handleButtonEvents() {
@@ -134,6 +136,7 @@ export class App {
   private dragItem(element: HTMLElement) {
     element.addEventListener('dragstart', (event) => {
       this.draggedItem = event.target;
+      this.dragging = true;
     });
   }
 
@@ -154,6 +157,7 @@ export class App {
         });
         const parrentEl = this.itemLists[this.currentColumn];
         parrentEl.appendChild(this.draggedItem);
+        this.dragging = false;
         this.rebuildArrays();
       });
     });
@@ -174,20 +178,21 @@ export class App {
     this.progressListArray = [];
     this.onHoldListArray = [];
 
-    for (let i = 0; i < this.backlogList.children.length; i++) {
-      this.backlogListArray.push(this.backlogList.children[i].textContent);
-    }
-    for (let i = 0; i < this.progressList.children.length; i++) {
-      this.progressListArray.push(this.progressList.children[i].textContent);
-    }
+    this.backlogListArray = Array.from(this.backlogList.children).map(
+      (item: any) => item.textContent
+    );
 
-    for (let i = 0; i < this.completeList.children.length; i++) {
-      this.completeListArray.push(this.completeList.children[i].textContent);
-    }
+    this.progressListArray = Array.from(this.progressList.children).map(
+      (item: any) => item.textContent
+    );
 
-    for (let i = 0; i < this.onHoldList.children.length; i++) {
-      this.onHoldListArray.push(this.onHoldList.children[i].textContent);
-    }
+    this.completeListArray = Array.from(this.completeList.children).map(
+      (item: any) => item.textContent
+    );
+
+    this.onHoldListArray = Array.from(this.onHoldList.children).map(
+      (item: any) => item.textContent
+    );
 
     this.updateDOM();
   }
@@ -233,11 +238,12 @@ export class App {
         const id = event.target.id;
         const selectedArray = this.listArrays[index];
         const selectedColumnEl = this.itemLists[index].children;
+
         if (!selectedColumnEl[id].textContent) {
           delete selectedArray[id];
+        } else {
+          selectedArray[id] = selectedColumnEl[id].textContent;
         }
-        console.log(selectedArray);
-        console.log(selectedColumnEl[id].textContent);
         this.updateDOM();
       });
     });
@@ -246,5 +252,15 @@ export class App {
   // Filter arrays to remove empty items
   private filterArray(array: any) {
     return array.filter((item: any) => item !== null);
+  }
+
+  private makeItemEditable() {
+    this.itemLists.forEach((itemList: HTMLElement, index: any) => {
+      if (!this.dragging) {
+        itemList.addEventListener('click', (event: any) => {
+          event.target.setAttribute('contentEditable', 'true');
+        });
+      }
+    });
   }
 }

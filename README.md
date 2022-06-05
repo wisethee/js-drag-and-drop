@@ -1,6 +1,8 @@
 # 📦 js-drag-and-drop
 
-kanban board with drag and drop items
+Kanban board with drag and drop items
+
+To drag an item click and drag, to edit double click, to save click outside the selected item.
 
 ## Installation
 
