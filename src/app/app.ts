@@ -10,9 +10,13 @@ export class App {
   private progressList: HTMLElement = document.getElementById('progress-list');
   private reviewList: HTMLElement = document.getElementById('review-list');
   private completedList: HTMLElement = document.getElementById('completed-list');
-  private headerList: NodeListOf<HTMLElement> = document.querySelectorAll(
-    '.column-header-description'
-  );
+
+  private addBtns: any = document.querySelectorAll('.button-add');
+  private saveItemBtns: any = document.querySelectorAll('.button-save');
+  private addItemContainers: any = document.querySelectorAll('.column-add-container');
+  private addItems = document.querySelectorAll('.add-item');
+
+  private itemsCount = document.querySelectorAll('.column-header-count');
 
   // List Array
   private itemListArray: any = [];
@@ -21,67 +25,69 @@ export class App {
   private reviewListArray: any = [];
   private completedListArray: any = [];
 
-  private updateOnLoad: boolean = false;
+  private updatedOnLoad = false;
 
   // Drag
   private draggedItem: any;
   private currentColumn: any;
   private dragging = false;
 
-  private updateDOM() {
-    if (!this.updateOnLoad) {
+  updateDOM() {
+    // Check localStorage
+    if (!this.updatedOnLoad) {
       this.getSavedColumns();
     }
 
-    // ToDO Column
+    // Backlog Column
     this.toDoList.textContent = '';
-    this.toDoListArray.forEach((toDoItem: any, index: any) => {
-      this.createItem(this.toDoList, 0, toDoItem, index);
+    this.toDoListArray.forEach((backlogItem: any, index: any) => {
+      this.createItem(this.toDoList, 0, backlogItem, index);
     });
     this.toDoListArray = this.filterArray(this.toDoListArray);
 
     // Progress Column
     this.progressList.textContent = '';
     this.progressListArray.forEach((progressItem: any, index: any) => {
-      this.createItem(this.progressList, 0, progressItem, index);
+      this.createItem(this.progressList, 1, progressItem, index);
     });
     this.progressListArray = this.filterArray(this.progressListArray);
 
-    // Review Column
+    // Complete Column
     this.reviewList.textContent = '';
-    this.reviewListArray.forEach((reviewItem: any, index: any) => {
-      this.createItem(this.reviewList, 0, reviewItem, index);
+    this.reviewListArray.forEach((completeItem: any, index: any) => {
+      this.createItem(this.reviewList, 2, completeItem, index);
     });
     this.reviewListArray = this.filterArray(this.reviewListArray);
 
-    // Completed Column
+    // On Hold Column
     this.completedList.textContent = '';
-    this.completedListArray.forEach((completedItem: any, index: any) => {
-      this.createItem(this.completedList, 0, completedItem, index);
+    this.completedListArray.forEach((onHoldItem: any, index: any) => {
+      this.createItem(this.completedList, 3, onHoldItem, index);
     });
     this.completedListArray = this.filterArray(this.completedListArray);
 
-    this.updateOnLoad = true;
+    this.updatedOnLoad = true;
     this.updateSavedColumns();
+    this.updateCount();
   }
 
   private handleEvents() {
     this.allowDrop();
     this.dropItem();
     this.dragEnter();
-    // this.makeItemEditable();
-    // this.showInputBox();
-    // this.hideInputBox();
-    // this.updateItem();
+    this.makeItemEditable();
+    this.showInputBox();
+    this.hideInputBox();
+    this.updateItem();
   }
 
   // Get Arrays from localStorage if available, set default values if not
   private getSavedColumns() {
-    if (localStorage.getItem('toDoListItems')) {
-      this.toDoListArray = JSON.parse(localStorage.toDoListItems);
-      this.progressListArray = JSON.parse(localStorage.progressListItems);
-      this.reviewListArray = JSON.parse(localStorage.reviewListItems);
-      this.completedListArray = JSON.parse(localStorage.completedListItems);
+    if (localStorage.length > 0) {
+      this.toDoListArray = JSON.parse(localStorage.toDoItems);
+      this.progressListArray = JSON.parse(localStorage.progressItems);
+      this.reviewListArray = JSON.parse(localStorage.reviewItems);
+      this.completedListArray = JSON.parse(localStorage.completedItems);
     } else {
       this.toDoListArray = ['Release the course', 'Sit back and relax'];
       this.progressListArray = ['Work on projects', 'Listen to music'];
@@ -89,7 +95,6 @@ export class App {
       this.completedListArray = ['Being uncool'];
     }
   }
-
   // Set localStorage Arrays
   private updateSavedColumns() {
     this.itemListArray = [
@@ -98,10 +103,10 @@ export class App {
       this.reviewListArray,
       this.completedListArray
     ];
-    const itemListNames = ['toDo', 'progress', 'review', 'completed'];
-    itemListNames.forEach((itemLIstName, index) => {
+    const arrayNames = ['toDo', 'progress', 'review', 'completed'];
+    arrayNames.forEach((arrayName, index) => {
       localStorage.setItem(
-        `${itemLIstName}Items`,
+        `${arrayName}Items`,
         JSON.stringify(this.itemListArray[index])
       );
     });
@@ -170,9 +175,12 @@ export class App {
     this.reviewListArray = [];
     this.completedListArray = [];
 
+    // console.log('before: ', this.toDoListArray);
+
     this.toDoListArray = Array.from(this.toDoList.children).map(
       (item: any) => item.textContent
     );
+    // console.log('after: ', this.toDoListArray);
 
     this.progressListArray = Array.from(this.progressList.children).map(
       (item: any) => item.textContent
@@ -187,5 +195,74 @@ export class App {
     );
 
     this.updateDOM();
+  }
+
+  // Show add item input box
+  private showInputBox() {
+    this.addBtns.forEach((addBtn: HTMLElement, index: any) => {
+      addBtn.addEventListener('click', (event: any) => {
+        addBtn.style.visibility = 'hidden';
+        this.saveItemBtns[index].style.display = 'flex';
+        this.addItemContainers[index].style.display = 'block';
+      });
+    });
+  }
+
+  // Save and hide item input box
+  private hideInputBox() {
+    this.saveItemBtns.forEach((saveItemBtn: HTMLElement, index: any) => {
+      saveItemBtn.addEventListener('click', (event: any) => {
+        saveItemBtn.style.display = 'none';
+        this.addBtns[index].style.visibility = 'visible';
+        this.addItemContainers[index].style.display = 'none';
+        this.addToColumn(index);
+      });
+    });
+  }
+
+  // Add text to localStorage
+  private addToColumn(index: any) {
+    const itemText = this.addItems[index].textContent;
+    const selectedArray = this.itemListArray[index];
+    if (itemText) {
+      selectedArray.push(itemText);
+      this.updateDOM();
+    }
+    this.addItems[index].textContent = '';
+  }
+
+  // update item or delete
+  private updateItem() {
+    this.itemList.forEach((item: HTMLElement, index: any) => {
+      item.addEventListener('focusout', (event: any) => {
+        const id = event.target.id;
+        const selectedArray = this.itemListArray[index];
+        const selectedColumnEl = this.itemList[index].children;
+
+        if (!selectedColumnEl[id].textContent) {
+          delete selectedArray[id];
+        } else {
+          selectedArray[id] = selectedColumnEl[id].textContent;
+        }
+        this.updateDOM();
+      });
+    });
+  }
+
+  private makeItemEditable() {
+    this.itemList.forEach((item: HTMLElement, index: any) => {
+      if (!this.dragging) {
+        item.addEventListener('click', (event: any) => {
+          event.target.setAttribute('contentEditable', 'true');
+        });
+      }
+    });
+  }
+
+  private updateCount() {
+    this.itemList.forEach((item: HTMLElement, index: any) => {
+      const itemEl: any = item.children.length;
+      this.itemsCount[index].textContent = itemEl;
+    });
   }
 }
