@@ -8,102 +8,97 @@
     <link rel="icon" type="image/x-icon" href="/src/assets/favicon.ico" />
   </head>
   <body>
-    <h1 class="main-title">Kanban Board</h1>
-    <div class="drag-container">
-      <ul class="drag-list">
-        <!-- Backlog Column -->
-        <li class="drag-column backlog-column">
-          <span class="header">
-            <h1>Backlog</h1>
-          </span>
-          <!-- Backlog Content -->
-          <div id="backlog-content" class="custom-scroll">
-            <ul class="drag-item-list" id="backlog-list"></ul>
-          </div>
-          <!-- Add Button Group -->
-          <div class="add-btn-group">
-            <div class="add-btn">
-              <span class="plus-sign">+</span>
-              <span>Add Item</span>
-            </div>
-            <div class="add-btn solid">
-              <span>Save Item</span>
-            </div>
-          </div>
-          <div class="add-container">
-            <div class="add-item" contenteditable="true"></div>
-          </div>
-        </li>
-        <!-- Progress Column -->
-        <li class="drag-column progress-column">
-          <span class="header">
-            <h1>In Progress</h1>
-          </span>
-          <!-- Progress Content -->
-          <div id="progress-content" class="custom-scroll">
-            <ul class="drag-item-list" id="progress-list"></ul>
-          </div>
-          <!-- Add Button Group -->
-          <div class="add-btn-group">
-            <div class="add-btn">
-              <span class="plus-sign">+</span>
-              <span>Add Item</span>
-            </div>
-            <div class="add-btn solid">
-              <span>Save Item</span>
-            </div>
-          </div>
-          <div class="add-container">
-            <div class="add-item" contenteditable="true"></div>
-          </div>
-        </li>
-        <!-- Complete Column -->
-        <li class="drag-column complete-column">
-          <span class="header">
-            <h1>Complete</h1>
-          </span>
-          <!-- Complete Content -->
-          <div id="complete-content" class="custom-scroll">
-            <ul class="drag-item-list" id="complete-list"></ul>
-          </div>
-          <!-- Add Button Group -->
-          <div class="add-btn-group">
-            <div class="add-btn">
-              <span class="plus-sign">+</span>
-              <span>Add Item</span>
-            </div>
-            <div class="add-btn solid">
-              <span>Save Item</span>
-            </div>
-          </div>
-          <div class="add-container">
-            <div class="add-item" contenteditable="true"></div>
-          </div>
-        </li>
-        <!-- On Hold Column -->
-        <li class="drag-column on-hold-column">
-          <span class="header">
-            <h1>On Hold</h1>
-          </span>
-          <!-- On Hold Content -->
-          <div id="on-hold-content" class="custom-scroll">
-            <ul class="drag-item-list" id="on-hold-list"></ul>
-          </div>
-          <!-- Add Button Group -->
-          <div class="add-btn-group">
-            <div class="add-btn">
-              <span class="plus-sign">+</span>
-              <span>Add Item</span>
-            </div>
-            <div class="add-btn solid">
-              <span>Save Item</span>
-            </div>
-          </div>
-          <div class="add-container">
-            <div class="add-item" contenteditable="true"></div>
-          </div>
-        </li>
-      </ul>
+    <!-- Title Container -->
+    <div class="container container-title">
+      <!-- Main Title -->
+      <h1 class="main-title">Drag & Drop</h1>
+    </div>
+
+    <!-- Columns Container -->
+    <div class="container">
+      <!-- To Do Column -->
+      <div class="column to-do-column">
+        <!-- Column Header -->
+        <div class="column-header">
+          <span class="column-header-description">TODO</span>
+          <span class="column-header-count">2</span>
+          <span class="column-header-element column-1"></span>
+        </div>
+        <!-- Column Content -->
+        <div class="column-content custom-scroll">
+          <div id="to-do-list" class="item-list"></div>
+        </div>
+        <div class="column-button-group">
+          <button class="button button-add">+ New Task</button>
+          <button class="button button-save">Save Task</button>
+        </div>
+        <div class="column-add-container">
+          <div class="add-item" contenteditable="true"></div>
+        </div>
+      </div>
+
+      <!-- In Progress Column -->
+      <div class="column in-progress-column">
+        <!-- Column Header -->
+        <div class="column-header">
+          <span class="column-header-description">IN PROGRESS</span>
+          <span class="column-header-count">2</span>
+          <span class="column-header-element column-2"></span>
+        </div>
+        <!-- Column Content -->
+        <div class="column-content custom-scroll">
+          <div id="progress-list" class="item-list"></div>
+        </div>
+        <div class="column-button-group">
+          <button class="button button-add">+ New Task</button>
+          <button class="button button-save">Save Task</button>
+        </div>
+        <div class="column-add-container">
+          <div class="add-item" contenteditable="true"></div>
+        </div>
+      </div>
+
+      <!-- Review Column -->
+      <div class="column review-column">
+        <!-- Column Header -->
+        <div class="column-header">
+          <span class="column-header-description">REVIEW</span>
+          <span class="column-header-count">2</span>
+          <span class="column-header-element column-3"></span>
+        </div>
+        <!-- Column Content -->
+        <div class="column-content custom-scroll">
+          <div id="review-list" class="item-list"></div>
+        </div>
+        <div class="column-button-group">
+          <button class="button button-add">+ New Task</button>
+          <button class="button button-save">Save Task</button>
+        </div>
+        <div class="column-add-container">
+          <div class="add-item" contenteditable="true"></div>
+        </div>
+      </div>
+
+      <!-- Completed Column -->
+      <div class="column completed-column">
+        <!-- Column Header -->
+        <div class="column-header">
+          <span class="column-header-description">COMPLETED</span>
+          <span class="column-header-count">1</span>
+          <span class="column-header-element column-4"></span>
+        </div>
+        <!-- Column Content -->
+        <div class="column-content custom-scroll">
+          <div id="completed-list" class="item-list"></div>
+        </div>
+        <div class="column-button-group">
+          <button class="button button-add">+ New Task</button>
+          <button class="button button-save">Save Task</button>
+        </div>
+        <div class="column-add-container">
+          <div class="add-item" contenteditable="true"></div>
+        </div>
+      </div>
     </div>
   </body>
 </html>

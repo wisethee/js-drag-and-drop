@@ -1,136 +1,127 @@
 export class App {
   constructor() {
-    this.handleDragAndDropEvents();
-    this.handleButtonEvents();
+    this.updateDOM();
+    this.handleEvents();
   }
 
-  private addBtns: any = document.querySelectorAll('.add-btn:not(.solid)');
-  private saveItemBtns: any = document.querySelectorAll('.solid');
-  private addItemContainers: any = document.querySelectorAll('.add-container');
-  private addItems = document.querySelectorAll('.add-item');
+  // HTML Elements
+  private itemList: NodeListOf<HTMLElement> = document.querySelectorAll('.item-list');
+  private toDoList: HTMLElement = document.getElementById('to-do-list');
+  private progressList: HTMLElement = document.getElementById('progress-list');
+  private reviewList: HTMLElement = document.getElementById('review-list');
+  private completedList: HTMLElement = document.getElementById('completed-list');
+  private headerList: NodeListOf<HTMLElement> = document.querySelectorAll(
+    '.column-header-description'
+  );
 
-  // Item List
-  private itemLists = document.querySelectorAll('.drag-item-list');
-  private backlogList = document.getElementById('backlog-list');
-  private progressList = document.getElementById('progress-list');
-  private completeList = document.getElementById('complete-list');
-  private onHoldList = document.getElementById('on-hold-list');
-
-  // Items
-  private updatedOnLoad = false;
-
-  // Initialize Arrays
-  private backlogListArray: any = [];
+  // List Array
+  private itemListArray: any = [];
+  private toDoListArray: any = [];
   private progressListArray: any = [];
-  private completeListArray: any = [];
-  private onHoldListArray: any = [];
-  private listArrays: any = [];
+  private reviewListArray: any = [];
+  private completedListArray: any = [];
+
+  private updateOnLoad: boolean = false;
 
   // Drag
   private draggedItem: any;
   private currentColumn: any;
   private dragging = false;
 
-  // Get arrays from localStorage if available
-  private getSavedColumns() {
-    if (localStorage.getItem('backlogItems')) {
-      this.backlogListArray = JSON.parse(localStorage.backlogItems);
-      this.progressListArray = JSON.parse(localStorage.progressItems);
-      this.completeListArray = JSON.parse(localStorage.completeItems);
-      this.onHoldListArray = JSON.parse(localStorage.onHoldItems);
-    } else {
-      this.backlogListArray = ['Release the course', 'Sit back and relax'];
-      this.progressListArray = ['Work on projects', 'Listen to music'];
-      this.completeListArray = ['Being cool', 'Getting stuff done'];
-      this.onHoldListArray = ['Being uncool'];
-    }
-  }
-
-  // Update columns in DOM, reset HTML, filter array, update localStorage
-  updateDOM() {
-    // Check localStorage
-    if (!this.updatedOnLoad) {
+  private updateDOM() {
+    if (!this.updateOnLoad) {
       this.getSavedColumns();
     }
 
-    // Backlog Column
-    this.backlogList.textContent = '';
-    this.backlogListArray.forEach((backlogItem: any, index: any) => {
-      this.createItemEl(this.backlogList, 0, backlogItem, index);
+    // ToDO Column
+    this.toDoList.textContent = '';
+    this.toDoListArray.forEach((toDoItem: any, index: any) => {
+      this.createItem(this.toDoList, 0, toDoItem, index);
     });
-    this.backlogListArray = this.filterArray(this.backlogListArray);
+    this.toDoListArray = this.filterArray(this.toDoListArray);
 
     // Progress Column
     this.progressList.textContent = '';
     this.progressListArray.forEach((progressItem: any, index: any) => {
-      this.createItemEl(this.progressList, 1, progressItem, index);
+      this.createItem(this.progressList, 0, progressItem, index);
     });
     this.progressListArray = this.filterArray(this.progressListArray);
 
-    // Complete Column
-    this.completeList.textContent = '';
-    this.completeListArray.forEach((completeItem: any, index: any) => {
-      this.createItemEl(this.completeList, 2, completeItem, index);
+    // Review Column
+    this.reviewList.textContent = '';
+    this.reviewListArray.forEach((reviewItem: any, index: any) => {
+      this.createItem(this.reviewList, 0, reviewItem, index);
     });
-    this.completeListArray = this.filterArray(this.completeListArray);
+    this.reviewListArray = this.filterArray(this.reviewListArray);
 
-    // On Hold Column
-    this.onHoldList.textContent = '';
-    this.onHoldListArray.forEach((onHoldItem: any, index: any) => {
-      this.createItemEl(this.onHoldList, 3, onHoldItem, index);
+    // Completed Column
+    this.completedList.textContent = '';
+    this.completedListArray.forEach((completedItem: any, index: any) => {
+      this.createItem(this.completedList, 0, completedItem, index);
     });
-    this.onHoldListArray = this.filterArray(this.onHoldListArray);
+    this.completedListArray = this.filterArray(this.completedListArray);
 
-    this.updatedOnLoad = true;
+    this.updateOnLoad = true;
     this.updateSavedColumns();
   }
 
-  // Set localStorage array
+  private handleEvents() {
+    this.allowDrop();
+    this.dropItem();
+    this.dragEnter();
+    // this.makeItemEditable();
+    // this.showInputBox();
+    // this.hideInputBox();
+    // this.updateItem();
+  }
+
+  // Get Arrays from localStorage if available, set default values if not
+  private getSavedColumns() {
+    if (localStorage.getItem('toDoListItems')) {
+      this.toDoListArray = JSON.parse(localStorage.toDoListItems);
+      this.progressListArray = JSON.parse(localStorage.progressListItems);
+      this.reviewListArray = JSON.parse(localStorage.reviewListItems);
+      this.completedListArray = JSON.parse(localStorage.completedListItems);
+    } else {
+      this.toDoListArray = ['Release the course', 'Sit back and relax'];
+      this.progressListArray = ['Work on projects', 'Listen to music'];
+      this.reviewListArray = ['Being cool', 'Getting stuff done'];
+      this.completedListArray = ['Being uncool'];
+    }
+  }
+
+  // Set localStorage Arrays
   private updateSavedColumns() {
-    this.listArrays = [
-      this.backlogListArray,
+    this.itemListArray = [
+      this.toDoListArray,
       this.progressListArray,
-      this.completeListArray,
-      this.onHoldListArray
+      this.reviewListArray,
+      this.completedListArray
     ];
-    const arrayNames = ['backlog', 'progress', 'complete', 'onHold'];
-    arrayNames.forEach((arrayName, index) => {
+    const itemListNames = ['toDo', 'progress', 'review', 'completed'];
+    itemListNames.forEach((itemLIstName, index) => {
       localStorage.setItem(
-        `${arrayName}Items`,
-        JSON.stringify(this.listArrays[index])
+        `${itemLIstName}Items`,
+        JSON.stringify(this.itemListArray[index])
       );
     });
   }
 
-  // Create DOM ELements for each list item
-  private createItemEl(
-    columnEl: HTMLElement,
-    column: any,
-    item: any,
-    index: any
-  ) {
-    // List Item
-    const listEl: HTMLElement = document.createElement('li');
-    listEl.classList.add('drag-item');
+  private filterArray(array: any) {
+    const filteredArray = array.filter((item: any) => item !== null);
+    return filteredArray;
+  }
+
+  // Create DOM Elements for each list item
+  private createItem(columnEl: any, column: any, item: any, index: any) {
+    const listEl = document.createElement('span');
     listEl.textContent = item;
+    listEl.id = index;
+    listEl.classList.add('item');
     listEl.draggable = true;
     this.dragItem(listEl);
     columnEl.appendChild(listEl);
-    // listEl.setAttribute('contentEditable', 'true');
     listEl.id = index;
-  }
-
-  private handleDragAndDropEvents() {
-    this.allowDrop();
-    this.dropItem();
-    this.dragEnter();
-    this.makeItemEditable();
-  }
-
-  private handleButtonEvents() {
-    this.showInputBox();
-    this.hideInputBox();
-    this.updateItem();
   }
 
   private dragItem(element: HTMLElement) {
@@ -141,21 +132,21 @@ export class App {
   }
 
   private allowDrop() {
-    this.itemLists.forEach((itemList: HTMLElement) => {
-      itemList.addEventListener('dragover', (event: Event) => {
+    this.itemList.forEach((item: HTMLElement) => {
+      item.addEventListener('dragover', (event: Event) => {
         event.preventDefault();
       });
     });
   }
 
   private dropItem() {
-    this.itemLists.forEach((itemList: HTMLElement) => {
-      itemList.addEventListener('drop', (event: Event) => {
+    this.itemList.forEach((item: HTMLElement) => {
+      item.addEventListener('drop', (event: Event) => {
         event.preventDefault();
-        this.itemLists.forEach((itemList: HTMLElement) => {
-          itemList.classList.remove('over');
+        this.itemList.forEach((itemList: HTMLElement) => {
+          // itemList.classList.remove('over');
         });
-        const parrentEl = this.itemLists[this.currentColumn];
+        const parrentEl = this.itemList[this.currentColumn];
         parrentEl.appendChild(this.draggedItem);
         this.dragging = false;
         this.rebuildArrays();
@@ -164,21 +155,22 @@ export class App {
   }
 
   private dragEnter() {
-    this.itemLists.forEach((itemList: HTMLElement, index: any) => {
-      itemList.addEventListener('dragenter', () => {
-        itemList.classList.add('over');
+    this.itemList.forEach((item: HTMLElement, index: any) => {
+      item.addEventListener('dragenter', () => {
+        // item.classList.add('over');
         this.currentColumn = index;
       });
     });
   }
+
   // Allow arrays to reflect drag and drop items
   private rebuildArrays() {
-    this.backlogListArray = [];
-    this.completeListArray = [];
+    this.toDoListArray = [];
     this.progressListArray = [];
-    this.onHoldListArray = [];
+    this.reviewListArray = [];
+    this.completedListArray = [];
 
-    this.backlogListArray = Array.from(this.backlogList.children).map(
+    this.toDoListArray = Array.from(this.toDoList.children).map(
       (item: any) => item.textContent
     );
 
@@ -186,81 +178,14 @@ export class App {
       (item: any) => item.textContent
     );
 
-    this.completeListArray = Array.from(this.completeList.children).map(
+    this.reviewListArray = Array.from(this.reviewList.children).map(
       (item: any) => item.textContent
     );
 
-    this.onHoldListArray = Array.from(this.onHoldList.children).map(
+    this.completedListArray = Array.from(this.completedList.children).map(
       (item: any) => item.textContent
     );
 
     this.updateDOM();
-  }
-
-  // Show add item input box
-  private showInputBox() {
-    this.addBtns.forEach((addBtn: HTMLElement, index: any) => {
-      addBtn.addEventListener('click', (event: any) => {
-        addBtn.style.visibility = 'hidden';
-        this.saveItemBtns[index].style.display = 'flex';
-        this.addItemContainers[index].style.display = 'flex';
-      });
-    });
-  }
-
-  // Save and hide item input box
-  private hideInputBox() {
-    this.saveItemBtns.forEach((saveItemBtn: HTMLElement, index: any) => {
-      saveItemBtn.addEventListener('click', (event: any) => {
-        saveItemBtn.style.display = 'none';
-        this.addBtns[index].style.visibility = 'visible';
-        this.addItemContainers[index].style.display = 'none';
-        this.addToColumn(index);
-      });
-    });
-  }
-
-  // Add text to localStorage
-  private addToColumn(index: any) {
-    const itemText = this.addItems[index].textContent;
-    const selectedArray = this.listArrays[index];
-    if (itemText) {
-      selectedArray.push(itemText);
-      this.updateDOM();
-    }
-    this.addItems[index].textContent = '';
-  }
-
-  // update item or delete
-  private updateItem() {
-    this.itemLists.forEach((itemList: HTMLElement, index: any) => {
-      itemList.addEventListener('focusout', (event: any) => {
-        const id = event.target.id;
-        const selectedArray = this.listArrays[index];
-        const selectedColumnEl = this.itemLists[index].children;
-
-        if (!selectedColumnEl[id].textContent) {
-          delete selectedArray[id];
-        } else {
-          selectedArray[id] = selectedColumnEl[id].textContent;
-        }
-        this.updateDOM();
-      });
-    });
-  }
-
-  // Filter arrays to remove empty items
-  private filterArray(array: any) {
-    return array.filter((item: any) => item !== null);
-  }
-
-  private makeItemEditable() {
-    this.itemLists.forEach((itemList: HTMLElement, index: any) => {
-      if (!this.dragging) {
-        itemList.addEventListener('click', (event: any) => {
-          event.target.setAttribute('contentEditable', 'true');
-        });
-      }
-    });
   }
 }
